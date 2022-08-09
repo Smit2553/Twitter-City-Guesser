@@ -5,7 +5,7 @@ import sqlite3
 import os
 import tweepy
 from dotenv import load_dotenv
-from traceback import print_exc
+import time
 
 load_dotenv()
 
@@ -28,7 +28,7 @@ def posttweet():
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
     api = tweepy.API(auth)
-    tweettext = "Can you guess which city this image is from?"
+    tweettext = "Can you guess which city this image is from? #city #puzzle #game #guess #geoguesser"
     image_path = f"{path}"
 
     # to attach the media file
@@ -52,4 +52,29 @@ def posttweet():
     con.close()
 
 
-posttweet()
+def check_for_replies():
+    consumer_key = os.environ.get('CONSUMERKEY')
+    consumer_secret = os.environ.get('CONSUMERSECRET')
+    access_token = os.environ.get('ACCESSTOKEN')
+    access_token_secret = os.environ.get('ACCESSTOKENSECRET')
+    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+    auth.set_access_token(access_token, access_token_secret)
+    api = tweepy.API(auth)
+    bot_id = int(api.verify_credentials().id_str)
+    mention_id = 1
+    mentions = api.mentions_timeline(since_id=mention_id)
+    message = 'test @{}'
+    words = ['guess']
+    for mention in mentions:
+
+        if mention.in_reply_to_status_id is not None and mention.author.id != bot_id:
+            if True in [word in mention.text.lower() for word in words]:
+                mention_id = mention.id
+                print(f'Mention Tweet Found! {mention_id}')
+                print(f"{mention.author.screen_name} - {mention.text}")
+                api.update_status(message.format(mention.author.screen_name), in_reply_to_status_id=mention.id_str)
+
+
+while True:
+    check_for_replies()
+    time.sleep(10)
