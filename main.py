@@ -64,11 +64,10 @@ def check_for_replies():
     mention_id = 1
     mentions = api.mentions_timeline(since_id=mention_id)
     message = 'test @{}'
-    words = ['guess']
+    word = 'guess'
     for mention in mentions:
-
         if mention.in_reply_to_status_id is not None and mention.author.id != bot_id:
-            if True in [word in mention.text.lower() for word in words]:
+            if word in mention.text.lower():
                 mention_id = mention.id
                 print(f'Mention Tweet Found! {mention_id}')
                 print(f"{mention.author.screen_name} - {mention.text}")
